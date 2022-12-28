@@ -34,6 +34,13 @@ async def read_all_books(skip_book: Optional[str] = None):
 async def read_book(book_name: str):
     return books[book_name]
 
+@app.get("/query/")
+async def read_book_query_param(book_name: Optional[str] = None):
+    if book_name is None:
+        return books
+
+    return books[book_name] 
+
 
 @app.get("/books/my_book")
 async def read_favorite_book():
@@ -59,3 +66,37 @@ async def get_direction(direction_name: DirectionName):
         return {"direction": direction_name, "subject": "right"}
     if direction_name == DirectionName.west:
         return {"direction": direction_name, "subject": "left"}
+
+
+@app.post("/")
+async def create_book(book_title, book_author):
+    current_book_id = 0
+    if len(books) > 0:
+        # books is a dictionary
+        for book in books:
+            x = int(book.split("_")[-1])
+            if x > current_book_id:
+                current_book_id = x + 1
+
+    books[f"book_{current_book_id}"] = {"title": book_title, "author": book_author}
+
+    return books[f"book_{current_book_id}"]
+
+
+@app.put("/{book_name}")
+async def update_book(book_name: str, book_title: str, book_author: str):
+    book = {"title": book_title, "author": book_author}
+    books[book_name] = book
+    return book
+
+
+@app.delete("/{book_name}")
+async def delete_book(book_name):
+    del books[book_name]
+    return f"OK! {book_name} was deleted."
+
+@app.delete("/query/")
+async def delete_book_query_param(book_name: str):
+    del books[book_name]
+    return f"OK from query param! {book_name} was deleted."
+
